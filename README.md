@@ -1,50 +1,24 @@
-# Welcome to your Expo app 👋
+## Core UI Components (from Figma)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Based on the SmartShooter Figma design (`Mazuryk_cross_assignment_2`), the following reusable components were identified and implemented in React Native:
 
-## Get started
+- `PrimaryButton` – main call-to-action button used on Home and New Training screens.
+- `TrainingCard` – card for displaying past training sessions in the History grid.
+- `StepperInput` – numeric input with +/- controls for Attempts and Made Shots.
+- `StatsCard` – reusable container for charts (Accuracy Trend, Court Heatmap).
+- `ProfileHeader` – user avatar with initials and basic player info.
+- `ProgressBar` – horizontal level/XP indicator on the Profile screen.
 
-1. Install dependencies
+## Responsiveness
 
-   ```bash
-   npm install
-   ```
+- The History screen uses `useWindowDimensions` to calculate card width and keep a responsive two-column layout on different screen sizes.
+- Layouts are built with Flexbox (`flexDirection`, `justifyContent`, `alignItems`) instead of fixed positions.
+- The `ProgressBar` component uses flexible width (percentage-based) so it scales on various devices.
 
-2. Start the app
+## Screenshots
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+![Home](assets/screenshots/home.jpg)
+![New Training](assets/screenshots/training.jpg)
+![History](assets/screenshots/history.jpg)
+![Stats](assets/screenshots/stats.jpg)
+![Profile](assets/screenshots/profile.jpg)
