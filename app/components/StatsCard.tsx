@@ -1,5 +1,8 @@
-import { COLORS } from '@/constants/colors';
-import { SPACING } from '@/constants/spacing';
+import { COLORS } from '@/app/constants/colors';
+import { RADIUS } from '@/app/constants/radius';
+import { SHADOW } from '@/app/constants/shadows';
+import { SPACING } from '@/app/constants/spacing';
+
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
@@ -41,9 +44,10 @@ export default function StatsCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: COLORS.surface,
-    borderRadius: 20,
+    borderRadius: RADIUS.card,
     padding: SPACING.md,
     marginBottom: SPACING.md,
+    ...SHADOW.card,
   },
   header: {
     flexDirection: 'row',
@@ -68,7 +72,7 @@ const styles = StyleSheet.create({
   },
   body: {
     height: 160,
-    borderRadius: 16,
+    borderRadius: RADIUS.innerCard,
     backgroundColor: COLORS.background,
     justifyContent: 'center',
     alignItems: 'center',

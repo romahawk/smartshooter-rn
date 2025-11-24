@@ -1,5 +1,5 @@
-import { COLORS } from '@/constants/colors';
-import { SPACING } from '@/constants/spacing';
+import { COLORS } from '@/app/constants/colors';
+import { SPACING } from '@/app/constants/spacing';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 

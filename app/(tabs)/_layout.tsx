@@ -1,6 +1,6 @@
 // app/(tabs)/_layout.tsx
-import { COLORS } from '@/constants/colors';
-import { SCREENS } from '@/constants/screens';
+import { COLORS } from '@/app/constants/colors';
+import { SCREENS } from '@/app/constants/screens';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { Tabs } from 'expo-router';
 import React from 'react';

@@ -1,5 +1,5 @@
 // app/_layout.tsx
-import { SCREENS } from '@/constants/screens';
+import { SCREENS } from '@/app/constants/screens';
 import { Stack } from 'expo-router';
 import React from 'react';
 

@@ -1,7 +1,7 @@
-import PrimaryButton from '@/components/PrimaryButton';
-import { COLORS } from '@/constants/colors';
-import { SCREENS } from '@/constants/screens';
-import { SPACING } from '@/constants/spacing';
+import PrimaryButton from '@/app/components/PrimaryButton';
+import { COLORS } from '@/app/constants/colors';
+import { SCREENS } from '@/app/constants/screens';
+import { SPACING } from '@/app/constants/spacing';
 import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';

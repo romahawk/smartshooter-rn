@@ -1,9 +1,10 @@
 // app/session/[id].tsx
-import { COLORS } from '@/constants/colors';
-import { SPACING } from '@/constants/spacing';
+
+import { COLORS } from '@/app/constants/colors';
+import { SPACING } from '@/app/constants/spacing';
 import { useLocalSearchParams } from 'expo-router';
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 export default function SessionDetailsScreen() {
   const params = useLocalSearchParams<{
@@ -16,19 +17,25 @@ export default function SessionDetailsScreen() {
   const { id, type, accuracy, lastSession } = params;
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.label}>Training type</Text>
       <Text style={styles.value}>{type ?? 'Unknown'}</Text>
 
       <Text style={styles.label}>Accuracy</Text>
-      <Text style={styles.value}>{accuracy ? `${accuracy}%` : '—'}</Text>
+      <Text style={styles.value}>
+        {accuracy ? `${accuracy}%` : 'Not measured'}
+      </Text>
 
-      <Text style={styles.label}>Last session date</Text>
-      <Text style={styles.value}>{lastSession ?? '—'}</Text>
+      <Text style={styles.label}>Notes / Description</Text>
+      <Text style={styles.description}>
+        {lastSession ?? 'No notes provided.'}
+      </Text>
+
+      <View style={styles.sectionDivider} />
 
       <Text style={styles.label}>Session ID</Text>
       <Text style={styles.value}>{id ?? '—'}</Text>
-    </View>
+    </ScrollView>
   );
 }
 
@@ -36,8 +43,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  content: {
     padding: SPACING.lg,
     gap: SPACING.sm,
+    paddingBottom: SPACING.xl,
   },
   label: {
     fontSize: 13,
@@ -49,5 +59,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textPrimary,
     marginBottom: SPACING.sm,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: COLORS.textPrimary,
+    marginBottom: SPACING.md,
+  },
+  sectionDivider: {
+    height: 1,
+    backgroundColor: COLORS.border ?? 'rgba(148, 163, 184, 0.4)',
+    marginVertical: SPACING.md,
   },
 });

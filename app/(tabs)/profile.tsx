@@ -1,7 +1,7 @@
-import ProfileHeader from '@/components/ProfileHeader';
-import ProgressBar from '@/components/ProgressBar';
-import { COLORS } from '@/constants/colors';
-import { SPACING } from '@/constants/spacing';
+import ProfileHeader from '@/app/components/ProfileHeader';
+import ProgressBar from '@/app/components/ProgressBar';
+import { COLORS } from '@/app/constants/colors';
+import { SPACING } from '@/app/constants/spacing';
 import React from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 

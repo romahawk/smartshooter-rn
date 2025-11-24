@@ -1,6 +1,6 @@
-import StatsCard from '@/components/StatsCard';
-import { COLORS } from '@/constants/colors';
-import { SPACING } from '@/constants/spacing';
+import StatsCard from '@/app/components/StatsCard';
+import { COLORS } from '@/app/constants/colors';
+import { SPACING } from '@/app/constants/spacing';
 import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 
