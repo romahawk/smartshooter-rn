@@ -1,20 +1,40 @@
 import PrimaryButton from '@/components/PrimaryButton';
 import StepperInput from '@/components/StepperInput';
 import { COLORS } from '@/constants/colors';
+import { SCREENS } from '@/constants/screens';
 import { SPACING } from '@/constants/spacing';
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import {
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native';
+
+const TRAINING_TYPES = ['Catch & Shoot', 'Free Throws', 'Spot Shooting'];
 
 export default function NewTrainingScreen() {
+  const router = useRouter();
+
   const [attempts, setAttempts] = useState(100);
   const [madeShots, setMadeShots] = useState(73);
+  const [trainingType, setTrainingType] = useState(TRAINING_TYPES[0]);
 
-  // later we'll make this a real picker
-  const trainingType = 'Catch & Shoot';
+  // simple cycling selector – every tap switches to the next type
+  const handleChangeTrainingType = () => {
+    const currentIndex = TRAINING_TYPES.indexOf(trainingType);
+    const nextIndex = (currentIndex + 1) % TRAINING_TYPES.length;
+    setTrainingType(TRAINING_TYPES[nextIndex]);
+  };
 
   const handleSave = () => {
-    // TODO: integrate with History / API later
+    // later we can push this into global state / API
     console.log('Save session', { trainingType, attempts, madeShots });
+
+    // for this homework: navigate to History tab after "saving"
+    router.push(`/${SCREENS.TABS_HISTORY}`);
+    // or router.push('/history') if needed
   };
 
   return (
@@ -23,10 +43,14 @@ export default function NewTrainingScreen() {
 
       <View style={styles.fieldGroup}>
         <Text style={styles.label}>Training type</Text>
-        <View style={styles.fakeSelect}>
+        <TouchableOpacity
+          style={styles.fakeSelect}
+          onPress={handleChangeTrainingType}
+          activeOpacity={0.8}
+        >
           <Text style={styles.fakeSelectText}>{trainingType}</Text>
           <Text style={styles.fakeSelectChevron}>⌄</Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <StepperInput
@@ -100,3 +124,4 @@ const styles = StyleSheet.create({
     marginTop: SPACING.xl * 1.2,
   },
 });
+

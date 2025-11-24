@@ -1,10 +1,14 @@
 import PrimaryButton from '@/components/PrimaryButton';
 import { COLORS } from '@/constants/colors';
+import { SCREENS } from '@/constants/screens';
 import { SPACING } from '@/constants/spacing';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Text style={styles.greeting}>Welcome back, 🏀 Alex!</Text>
@@ -18,7 +22,9 @@ export default function HomeScreen() {
       <PrimaryButton
         title="Start Training"
         onPress={() => {
-          // later: navigate to New Training
+          // navigate to "+ Training" tab
+          router.push(`/${SCREENS.TABS_NEW_TRAINING}`);
+          // if SCREENS is not set up, you can also use: router.push('/new-training');
         }}
         style={styles.startButton}
       />
@@ -65,3 +71,4 @@ const styles = StyleSheet.create({
     marginTop: SPACING.lg,
   },
 });
+

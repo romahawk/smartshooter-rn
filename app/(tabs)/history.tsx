@@ -1,12 +1,14 @@
 import TrainingCard from '@/components/TrainingCard';
 import { COLORS } from '@/constants/colors';
+import { SCREENS } from '@/constants/screens';
 import { SPACING } from '@/constants/spacing';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-    FlatList,
-    StyleSheet,
-    useWindowDimensions,
-    View,
+  FlatList,
+  StyleSheet,
+  useWindowDimensions,
+  View,
 } from 'react-native';
 
 const MOCK_SESSIONS = [
@@ -18,6 +20,8 @@ const MOCK_SESSIONS = [
 
 export default function HistoryScreen() {
   const { width } = useWindowDimensions();
+  const router = useRouter();
+
   const horizontalPadding = SPACING.lg * 2;
   const gap = SPACING.md;
   const cardWidth = (width - horizontalPadding - gap) / 2;
@@ -29,13 +33,24 @@ export default function HistoryScreen() {
         numColumns={2}
         keyExtractor={(item) => item.id}
         columnWrapperStyle={{ justifyContent: 'space-between' }}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <TrainingCard
             type={item.type}
             accuracy={item.accuracy}
             lastSession={item.lastSession}
             style={{ width: cardWidth }}
-            onPress={() => {}}
+            onPress={() =>
+              router.push({
+                pathname: `/${SCREENS.SESSION_DETAILS}`,
+                params: {
+                  id: item.id,
+                  type: item.type,
+                  accuracy: String(item.accuracy),
+                  lastSession: item.lastSession,
+                },
+              })
+            }
           />
         )}
         showsVerticalScrollIndicator={false}
@@ -48,7 +63,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  listContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
+    paddingBottom: SPACING.xl,
   },
 });
