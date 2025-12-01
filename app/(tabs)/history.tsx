@@ -1,10 +1,4 @@
 // app/(tabs)/history.tsx
-
-import { ApiSession, fetchSessions } from '@/app/api/api';
-import TrainingCard from '@/app/components/TrainingCard';
-import { COLORS } from '@/app/constants/colors';
-import { SCREENS } from '@/app/constants/screens';
-import { SPACING } from '@/app/constants/spacing';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -12,89 +6,116 @@ import {
   FlatList,
   StyleSheet,
   Text,
-  useWindowDimensions,
   View,
 } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+
+import TrainingCard from '@/app/components/TrainingCard';
+import { COLORS } from '@/app/constants/colors';
+import { SCREENS } from '@/app/constants/screens';
+import { SPACING } from '@/app/constants/spacing';
+import { useTheme } from '@/app/context/ThemeContext';
+
+import type { ApiSession } from '@/app/api/api';
+import { fetchSessions } from '@/app/api/api';
+import type { RootState } from '@/app/store/store';
+import { setSessions } from '@/app/store/trainingSessionsSlice';
+
+// same dark palette as Profile
+const DARK_BACKGROUND = '#020617';
+const DARK_TEXT_SECONDARY = '#9CA3AF';
 
 export default function HistoryScreen() {
-  const { width } = useWindowDimensions();
+  const { isDark } = useTheme();
   const router = useRouter();
+  const dispatch = useDispatch();
 
-  const [sessions, setSessions] = useState<ApiSession[]>([]);
-  const [loading, setLoading] = useState(true);
+  const sessions = useSelector(
+    (state: RootState) => state.trainingSessions.sessions
+  );
+
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const horizontalPadding = SPACING.lg * 2;
-  const gap = SPACING.md;
-  const cardWidth = (width - horizontalPadding - gap) / 2;
-
   useEffect(() => {
-    fetchSessions()
-      .then((result: ApiSession[]) => {
-        // Limit to first 20 items to keep UI readable
-        setSessions(result.slice(0, 20));
-      })
-      .catch(() => {
-        setError('Failed to load sessions. Please try again later.');
-      })
-      .finally(() => {
+    async function load() {
+      try {
+        setLoading(true);
+        setError(null);
+        const data: ApiSession[] = await fetchSessions();
+        dispatch(setSessions(data));
+      } catch (err) {
+        console.error(err);
+        setError('Failed to load sessions from API');
+      } finally {
         setLoading(false);
-      });
-  }, []);
+      }
+    }
+
+    load();
+  }, [dispatch]);
+
+  const renderItem = ({ item }: { item: ApiSession }) => (
+    <View style={styles.cardWrapper}>
+      <TrainingCard
+        title={item.title}
+        accuracy={item.accuracy}
+        lastSessionLabel={item.lastSessionDate}
+        isDark={isDark}
+        onPress={() =>
+          router.push({
+            pathname: SCREENS.SESSION_DETAILS,
+            params: { id: String(item.id) },
+          })
+        }
+      />
+    </View>
+  );
 
   if (loading) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Loading sessions...</Text>
+      <View
+        style={[
+          styles.loadingContainer,
+          isDark && styles.loadingContainerDark,
+        ]}
+      >
+        <ActivityIndicator size="large" color={COLORS.accent} />
+        <Text
+          style={[styles.loadingText, isDark && styles.loadingTextDark]}
+        >
+          Loading sessions…
+        </Text>
       </View>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.center}>
-        <Text style={styles.errorText}>{error}</Text>
+      <View
+        style={[
+          styles.loadingContainer,
+          isDark && styles.loadingContainerDark,
+        ]}
+      >
+        <Text style={[styles.errorText, isDark && styles.errorTextDark]}>
+          {error}
+        </Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[styles.container, isDark && styles.containerDark]}
+    >
       <FlatList
         data={sessions}
         numColumns={2}
-        keyExtractor={(item) => item.id.toString()}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
-          // Map API data → SmartShooter training card
-          const accuracy = Math.floor(Math.random() * 21) + 60; // 60–80%
-
-          const shortTitle =
-            item.title.length > 22 ? item.title.slice(0, 22) + '…' : item.title;
-
-          return (
-            <TrainingCard
-              type={shortTitle}
-              accuracy={accuracy}
-              lastSession="API session"
-              style={{ width: cardWidth }}
-              onPress={() =>
-                router.push({
-                  pathname: `/${SCREENS.SESSION_DETAILS}`,
-                  params: {
-                    id: String(item.id),
-                    type: item.title,
-                    accuracy: String(accuracy),
-                    lastSession: item.body, // full text as notes
-                  },
-                })
-              }
-            />
-          );
-        }}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={renderItem}
       />
     </View>
   );
@@ -105,26 +126,43 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
   },
+  containerDark: {
+    backgroundColor: DARK_BACKGROUND,
+  },
   listContent: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.lg,
-    paddingBottom: SPACING.xl,
+    paddingBottom: SPACING.xl * 2,
   },
-  center: {
+  row: {
+    justifyContent: 'space-between',
+    marginBottom: SPACING.lg,
+  },
+  cardWrapper: {
+    width: '48%',
+  },
+  loadingContainer: {
     flex: 1,
-    backgroundColor: COLORS.background,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: SPACING.lg,
+    backgroundColor: COLORS.background,
+  },
+  loadingContainerDark: {
+    backgroundColor: DARK_BACKGROUND,
   },
   loadingText: {
     marginTop: SPACING.md,
-    fontSize: 14,
     color: COLORS.textSecondary,
   },
+  loadingTextDark: {
+    color: DARK_TEXT_SECONDARY,
+  },
   errorText: {
-    fontSize: 14,
-    color: '#EF4444', // fixed: don't rely on COLORS.error
+    color: COLORS.accent, // use accent as "error" color here
     textAlign: 'center',
+    paddingHorizontal: SPACING.lg,
+  },
+  errorTextDark: {
+    color: COLORS.accent,
   },
 });

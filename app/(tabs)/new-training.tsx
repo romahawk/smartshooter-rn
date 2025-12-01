@@ -1,127 +1,159 @@
+// app/(tabs)/new-training.tsx
+import React, { useState } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 import PrimaryButton from '@/app/components/PrimaryButton';
 import StepperInput from '@/app/components/StepperInput';
 import { COLORS } from '@/app/constants/colors';
-import { SCREENS } from '@/app/constants/screens';
 import { SPACING } from '@/app/constants/spacing';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import { useTheme } from '@/app/context/ThemeContext';
 
-const TRAINING_TYPES = ['Catch & Shoot', 'Free Throws', 'Spot Shooting'];
+const TRAINING_TYPES = [
+  'Spot Shooting',
+  'Catch & Shoot',
+  'Free Throws',
+  'Off the Dribble',
+];
 
 export default function NewTrainingScreen() {
-  const router = useRouter();
+  const { isDark } = useTheme();
 
-  const [attempts, setAttempts] = useState(100);
-  const [madeShots, setMadeShots] = useState(73);
-  const [trainingType, setTrainingType] = useState(TRAINING_TYPES[0]);
+  const [trainingType] = useState<string>('Catch & Shoot');
+  const [attempts, setAttempts] = useState<number>(100);
+  const [madeShots, setMadeShots] = useState<number>(73);
 
-  // simple cycling selector – every tap switches to the next type
-  const handleChangeTrainingType = () => {
-    const currentIndex = TRAINING_TYPES.indexOf(trainingType);
-    const nextIndex = (currentIndex + 1) % TRAINING_TYPES.length;
-    setTrainingType(TRAINING_TYPES[nextIndex]);
+  const backgroundStyle = {
+    backgroundColor: isDark ? '#020617' : COLORS.background,
   };
 
-  const handleSave = () => {
-    // later we can push this into global state / API
-    console.log('Save session', { trainingType, attempts, madeShots });
+  const titleColor = {
+    color: isDark ? COLORS.textPrimary : COLORS.textPrimary,
+  };
 
-    // for this homework: navigate to History tab after "saving"
-    router.push(`/${SCREENS.TABS_HISTORY}`);
-    // or router.push('/history') if needed
+  const labelColor = {
+    color: isDark ? COLORS.textSecondary : COLORS.textSecondary,
+  };
+
+  const inputCardStyle = {
+    backgroundColor: isDark ? '#02091f' : COLORS.surface,
+    borderColor: isDark ? '#1f2937' : COLORS.border,
+  };
+
+  const trainingTypeAccuracy =
+    attempts === 0 ? 0 : Math.round((madeShots / attempts) * 100);
+
+  const handleSave = () => {
+    console.log('Saved session:', {
+      trainingType,
+      attempts,
+      madeShots,
+      accuracy: trainingTypeAccuracy,
+    });
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>New Training</Text>
+    <ScrollView
+      style={[styles.container, backgroundStyle]}
+      contentContainerStyle={styles.content}
+      showsVerticalScrollIndicator={false}
+    >
+      <Text style={[styles.title, titleColor]}>New Training</Text>
 
-      <View style={styles.fieldGroup}>
-        <Text style={styles.label}>Training type</Text>
-        <TouchableOpacity
-          style={styles.fakeSelect}
-          onPress={handleChangeTrainingType}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.fakeSelectText}>{trainingType}</Text>
-          <Text style={styles.fakeSelectChevron}>⌄</Text>
+      <View style={[styles.card, inputCardStyle]}>
+        <Text style={[styles.label, labelColor]}>Training type</Text>
+
+        {/* Simple fake select for now */}
+        <TouchableOpacity style={styles.fakeSelect}>
+          <Text style={[styles.fakeSelectText, titleColor]}>
+            {trainingType}
+          </Text>
         </TouchableOpacity>
       </View>
 
-      <StepperInput
-        label="Attempts"
-        value={attempts}
-        onChange={setAttempts}
-        min={0}
-        style={{ marginTop: SPACING.lg }}
-      />
+      <View style={[styles.card, inputCardStyle]}>
+        <StepperInput
+          label="Attempts"
+          value={attempts}
+          onChange={setAttempts}
+          min={1}
+          max={500}
+        />
+      </View>
 
-      <StepperInput
-        label="Made Shots"
-        value={madeShots}
-        onChange={setMadeShots}
-        min={0}
-        max={attempts}
-      />
+      <View style={[styles.card, inputCardStyle]}>
+        <StepperInput
+          label="Made Shots"
+          value={madeShots}
+          onChange={setMadeShots}
+          min={0}
+          max={attempts}
+        />
+      </View>
+
+      <View style={[styles.card, inputCardStyle]}>
+        <Text style={[styles.label, labelColor]}>Accuracy</Text>
+        <Text style={[styles.accuracyValue, titleColor]}>
+          {trainingTypeAccuracy}%
+        </Text>
+      </View>
 
       <PrimaryButton
         title="Save Session"
         onPress={handleSave}
         style={styles.saveButton}
       />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+  },
+  content: {
     paddingHorizontal: SPACING.lg,
     paddingTop: SPACING.xl,
+    paddingBottom: SPACING.xl * 2,
   },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: COLORS.textPrimary,
-    marginBottom: SPACING.lg,
     textAlign: 'center',
+    marginBottom: SPACING.xl,
   },
-  fieldGroup: {
-    marginBottom: SPACING.md,
+  card: {
+    borderRadius: 16,
+    padding: SPACING.lg,
+    marginBottom: SPACING.lg,
+    borderWidth: 1,
   },
   label: {
     fontSize: 14,
-    fontWeight: '500',
-    color: COLORS.textPrimary,
     marginBottom: SPACING.sm,
+    fontWeight: '500',
   },
   fakeSelect: {
     height: 48,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: COLORS.border,
-    backgroundColor: COLORS.surface,
     paddingHorizontal: SPACING.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   fakeSelectText: {
     fontSize: 14,
-    color: COLORS.textPrimary,
   },
-  fakeSelectChevron: {
-    fontSize: 18,
-    color: COLORS.textSecondary,
+  accuracyValue: {
+    fontSize: 24,
+    fontWeight: '700',
   },
   saveButton: {
     marginTop: SPACING.xl * 1.2,
   },
 });
-
