@@ -9,31 +9,57 @@ export interface ApiSession {
   notes: string;
 }
 
-const API_URL = 'https://jsonplaceholder.typicode.com/posts';
+// якщо тестуєш у браузері: http://localhost:4000
+// якщо тестуєш на телефоні через Expo — встав свою IP: http://192.168.X.Y:4000
+const API_BASE_URL = 'http://localhost:4000';
 
-export async function fetchSessions(): Promise<ApiSession[]> {
-  const response = await fetch(API_URL);
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch sessions from API');
+async function handleResponse<T>(res: Response): Promise<T> {
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API error ${res.status}: ${text}`);
   }
+  return res.json() as Promise<T>;
+}
 
-  const posts: { id: number; title: string; body: string }[] =
-    await response.json();
+// ===== GET /sessions =====
+export async function fetchSessions(): Promise<ApiSession[]> {
+  const res = await fetch(`${API_BASE_URL}/sessions`);
+  return handleResponse<ApiSession[]>(res);
+}
 
-  // Take first 8 posts and map them into our domain model
-  const sessions: ApiSession[] = posts.slice(0, 8).map((post, index) => {
-    const accuracy = 60 + ((index * 3) % 20); // 60–79% just to have different values
-    const lastSessionDate = `API session #${post.id}`;
+// ===== POST /sessions =====
+export type CreateSessionInput = Omit<ApiSession, 'id'>;
 
-    return {
-      id: post.id,
-      title: post.title,
-      accuracy,
-      lastSessionDate,
-      notes: post.body,
-    };
+export async function createSession(
+  data: CreateSessionInput
+): Promise<ApiSession> {
+  const res = await fetch(`${API_BASE_URL}/sessions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
   });
+  return handleResponse<ApiSession>(res);
+}
 
-  return sessions;
+// ===== PUT /sessions/:id =====
+export async function updateSessionApi(
+  session: ApiSession
+): Promise<ApiSession> {
+  const res = await fetch(`${API_BASE_URL}/sessions/${session.id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(session),
+  });
+  return handleResponse<ApiSession>(res);
+}
+
+// ===== DELETE /sessions/:id =====
+export async function deleteSessionApi(id: number): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/sessions/${id}`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API error ${res.status}: ${text}`);
+  }
 }

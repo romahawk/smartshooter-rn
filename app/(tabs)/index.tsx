@@ -14,19 +14,20 @@ export default function HomeScreen() {
   const { isDark } = useTheme();
 
   const backgroundStyle = {
-    backgroundColor: isDark ? '#020617' : COLORS.background,
+    backgroundColor: isDark ? COLORS.darkBackground : COLORS.background,
   };
 
   const titleColor = {
-    color: isDark ? COLORS.textPrimary : COLORS.textPrimary,
+    color: isDark ? COLORS.darkTextPrimary : COLORS.textPrimary,
   };
 
   const subtitleColor = {
-    color: isDark ? COLORS.textSecondary : COLORS.textSecondary,
+    color: isDark ? COLORS.darkTextSecondary : COLORS.textSecondary,
   };
 
   const cardStyle = {
-    backgroundColor: isDark ? '#02091f' : COLORS.surface,
+    backgroundColor: isDark ? COLORS.darkSurface : COLORS.surface,
+    borderColor: isDark ? COLORS.darkBorder : COLORS.border,
   };
 
   return (
@@ -35,8 +36,10 @@ export default function HomeScreen() {
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={[styles.title, titleColor]}>Welcome back, Alex 👋</Text>
-      <Text style={[styles.subtitle, subtitleColor]}>
+      <Text style={[styles.welcomeTitle, titleColor]}>
+        Welcome back, Alex 👋
+      </Text>
+      <Text style={[styles.welcomeSubtitle, subtitleColor]}>
         Track your basketball shooting progress and keep your streak alive.
       </Text>
 
@@ -75,12 +78,12 @@ const styles = StyleSheet.create({
     paddingTop: SPACING.xl,
     paddingBottom: SPACING.xl * 2,
   },
-  title: {
+  welcomeTitle: {
     fontSize: 22,
     fontWeight: '700',
     marginBottom: SPACING.xs,
   },
-  subtitle: {
+  welcomeSubtitle: {
     fontSize: 14,
     marginBottom: SPACING.xl,
   },
@@ -88,6 +91,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: SPACING.lg,
     marginBottom: SPACING.lg,
+    borderWidth: 1,
   },
   cardTitle: {
     fontSize: 14,

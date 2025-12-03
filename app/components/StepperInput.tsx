@@ -2,11 +2,12 @@ import { COLORS } from '@/app/constants/colors';
 import { SPACING } from '@/app/constants/spacing';
 import React from 'react';
 import {
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
-    ViewStyle,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
 
 type StepperInputProps = {
@@ -38,6 +39,21 @@ export default function StepperInput({
     }
   };
 
+  const handleTextChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9]/g, '');
+
+    if (cleaned === '') {
+      onChange(min);
+      return;
+    }
+
+    const num = parseInt(cleaned, 10);
+    if (Number.isNaN(num)) return;
+
+    const clamped = Math.min(Math.max(num, min), max);
+    onChange(clamped);
+  };
+
   return (
     <View style={[styles.container, style]}>
       <Text style={styles.label}>{label}</Text>
@@ -51,7 +67,12 @@ export default function StepperInput({
           <Text style={styles.buttonText}>–</Text>
         </TouchableOpacity>
 
-        <Text style={styles.value}>{value}</Text>
+        <TextInput
+          style={styles.valueInput}
+          keyboardType="numeric"
+          value={String(value)}
+          onChangeText={handleTextChange}
+        />
 
         <TouchableOpacity
           style={[styles.button, value >= max && styles.buttonDisabled]}
@@ -102,11 +123,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: COLORS.textPrimary,
   },
-  value: {
-    minWidth: 40,
+  valueInput: {
+    minWidth: 50,
     textAlign: 'center',
     fontSize: 16,
     fontWeight: '600',
     color: COLORS.textPrimary,
+    paddingVertical: 0,
+    paddingHorizontal: 4,
   },
 });

@@ -12,7 +12,6 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import TrainingCard from '@/app/components/TrainingCard';
 import { COLORS } from '@/app/constants/colors';
-import { SCREENS } from '@/app/constants/screens';
 import { SPACING } from '@/app/constants/spacing';
 import { useTheme } from '@/app/context/ThemeContext';
 
@@ -21,7 +20,6 @@ import { fetchSessions } from '@/app/api/api';
 import type { RootState } from '@/app/store/store';
 import { setSessions } from '@/app/store/trainingSessionsSlice';
 
-// same dark palette as Profile
 const DARK_BACKGROUND = '#020617';
 const DARK_TEXT_SECONDARY = '#9CA3AF';
 
@@ -38,22 +36,37 @@ export default function HistoryScreen() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
+
     async function load() {
       try {
         setLoading(true);
         setError(null);
         const data: ApiSession[] = await fetchSessions();
-        dispatch(setSessions(data));
+        if (isMounted) {
+          dispatch(setSessions(data));
+        }
       } catch (err) {
         console.error(err);
-        setError('Failed to load sessions from API');
+        if (isMounted) {
+          setError('Failed to load sessions from API');
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
 
-    load();
-  }, [dispatch]);
+    // ВАЖЛИВО: фетчимо тільки якщо ще немає сесій
+    if (sessions.length === 0) {
+      load();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [dispatch, sessions.length]);
 
   const renderItem = ({ item }: { item: ApiSession }) => (
     <View style={styles.cardWrapper}>
@@ -64,7 +77,7 @@ export default function HistoryScreen() {
         isDark={isDark}
         onPress={() =>
           router.push({
-            pathname: SCREENS.SESSION_DETAILS,
+            pathname: '/training/[id]',
             params: { id: String(item.id) },
           })
         }
@@ -72,7 +85,7 @@ export default function HistoryScreen() {
     </View>
   );
 
-  if (loading) {
+  if (loading && sessions.length === 0) {
     return (
       <View
         style={[
@@ -90,7 +103,7 @@ export default function HistoryScreen() {
     );
   }
 
-  if (error) {
+  if (error && sessions.length === 0) {
     return (
       <View
         style={[
@@ -107,15 +120,30 @@ export default function HistoryScreen() {
 
   return (
     <View
-      style={[styles.container, isDark && styles.containerDark]}
+      style={[
+        styles.container,
+        isDark && styles.containerDark,
+      ]}
     >
+      <Text style={styles.title}>Training History</Text>
+
       <FlatList
         data={sessions}
+        keyExtractor={(item) => String(item.id)}
         numColumns={2}
-        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.listContent}
-        keyExtractor={(item) => item.id.toString()}
+        columnWrapperStyle={styles.row}
         renderItem={renderItem}
+        ListEmptyComponent={
+          <Text
+            style={[
+              styles.emptyText,
+              isDark && styles.emptyTextDark,
+            ]}
+          >
+            No sessions yet. Start a new training!
+          </Text>
+        }
       />
     </View>
   );
@@ -129,9 +157,16 @@ const styles = StyleSheet.create({
   containerDark: {
     backgroundColor: DARK_BACKGROUND,
   },
+  title: {
+    fontSize: 20,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginTop: SPACING.xl,
+    marginBottom: SPACING.md,
+    color: COLORS.textPrimary,
+  },
   listContent: {
     paddingHorizontal: SPACING.lg,
-    paddingTop: SPACING.lg,
     paddingBottom: SPACING.xl * 2,
   },
   row: {
@@ -139,12 +174,21 @@ const styles = StyleSheet.create({
     marginBottom: SPACING.lg,
   },
   cardWrapper: {
-    width: '48%',
+    flex: 1,
+    marginHorizontal: SPACING.xs,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: SPACING.xl,
+    color: COLORS.textSecondary,
+  },
+  emptyTextDark: {
+    color: DARK_TEXT_SECONDARY,
   },
   loadingContainer: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
     backgroundColor: COLORS.background,
   },
   loadingContainerDark: {
@@ -158,7 +202,7 @@ const styles = StyleSheet.create({
     color: DARK_TEXT_SECONDARY,
   },
   errorText: {
-    color: COLORS.accent, // use accent as "error" color here
+    color: COLORS.accent,
     textAlign: 'center',
     paddingHorizontal: SPACING.lg,
   },
