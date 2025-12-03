@@ -1,233 +1,177 @@
-# SmartShooter RN – Cross Assignment 5 (API Integration)
+# SmartShooter RN – Cross Assignment 6 (Context API + Redux + Custom API)
 
-SmartShooter RN is a React Native (Expo + TypeScript) application designed to help players track basketball shooting performance.  
-This repository includes the implementation for **Cross Assignment 4 (navigation)** and **Cross Assignment 5 (API integration & list rendering)**.
+SmartShooter RN is a React Native (Expo + TypeScript) application that helps players track their basketball shooting performance.
+
+This repository now includes the implementation for:
+
+- **Cross Assignment 4** – Navigation (Expo Router)
+- **Cross Assignment 5** – Basic API integration & list rendering
+- **Cross Assignment 6** – **Context API (theme)** + **Redux** + **custom backend API with full CRUD**
 
 ---
 
-# 📌 Features Implemented in Cross Assignment 5
+## 🎯 What Was Implemented in Cross Assignment 6
 
-### ✔️ 1. Public API Chosen  
-For this assignment, we selected the safe, stable **JSONPlaceholder REST API**:
+### 1. Context API – Light / Dark Theme
 
-https://jsonplaceholder.typicode.com/posts
+The app uses a custom **ThemeContext** to manage light/dark theme:
 
-While SmartShooter will eventually use a real backend, JSONPlaceholder is ideal for testing:
+- `ThemeProvider` wraps the entire app.
+- Screens consume `useTheme()` to adjust colors:
+  - Background: `background` / `darkBackground`
+  - Text: `textPrimary/textSecondary` vs `darkTextPrimary/darkTextSecondary`
+  - Cards: `surface/border` vs `darkSurface/darkBorder`
+- Implemented on:
+  - `Home` (`app/(tabs)/index.tsx`)
+  - `New Training` (`app/(tabs)/new-training.tsx`)
+  - `History` (`app/(tabs)/history.tsx`)
+  - `Training Details` (`app/training/[id].tsx`)
 
-- Does not require API keys  
-- Fast responses  
-- Returns a list of objects suitable for lists  
-- Supports predictable `/posts/:id` routes  
-- Perfect for demonstrating loading, errors, navigation, and list rendering
+Dark theme readability has been improved using dedicated dark color tokens in `colors.ts`.
 
-### ✔️ 2. API Integration (Fetch)  
-All API logic is implemented in:
+---
 
-```
-app/api/api.ts
-```
+## 2. Redux – Global State for Training Sessions
 
-Example:
+Redux Toolkit is used for managing global state:
+
+- Slice: `trainingSessionsSlice.ts`
+- Reducers:
+  - `setSessions` – initialize list from backend
+  - `addSession` – add new session
+  - `updateSession` – edit session
+  - `deleteSession` – remove session
+
+Redux is consumed on New Training, History, and Training Details screens.
+
+---
+
+## 3. Custom Backend API (Express)
+
+Backend folder: `backend/`
+
+Endpoints:
+
+- `GET /sessions`
+- `POST /sessions`
+- `PUT /sessions/:id`
+- `DELETE /sessions/:id`
+
+This API replaces the earlier JSONPlaceholder test API.
+
+---
+
+## 4. Frontend API Layer
+
+`app/api/api.ts` encapsulates backend calls:
 
 ```ts
-export const fetchSessions = async () => {
-  const response = await fetch(API_URL);
-  if (!response.ok) throw new Error('Failed to load data');
-  return response.json();
-};
+fetchSessions();
+createSession();
+updateSessionApi();
+deleteSessionApi();
 ```
 
-### ✔️ 3. Rendering via FlatList  
-The **History** screen now renders real API data via:
-
-```ts
-<FlatList
-  data={sessions}
-  renderItem={({ item }) => (
-    <TrainingCard
-      title={item.title}
-      accuracy={generateAccuracy()}
-      lastSession="API session"
-      onPress={() => handlePress(item)}
-    />
-  )}
-  keyExtractor={(item) => item.id.toString()}
-/>
-```
-
-### ✔️ 4. Loading & Error Handling  
-Implemented with:
-
-```ts
-if (loading) return <ActivityIndicator size="large" />;
-if (error)   return <Text style={styles.error}>{error}</Text>;
-```
-
-### ✔️ 5. Data → Navigation  
-Item parameters are passed into:
-
-```
-session/[id].tsx
-```
-
-Example:
-
-```ts
-router.push({
-  pathname: '/session/[id]',
-  params: { id: item.id, title: item.title, accuracy }
-});
-```
-
-The details screen displays dynamic data from `route.params`.
+Used throughout the app for CRUD operations.
 
 ---
 
-# 📡 API Explanation (For Mentor)
+## 5. UI / UX Flow
 
-### Why JSONPlaceholder?  
-SmartShooter is a sports app, but no stable free basketball API exists with:
+### New Training:
+- Training types: *Catch & Shoot, Spot Shooting, Half Court Sprints, Off the Dribble*
+- Stepper inputs + manual editing
+- Automatic accuracy calculation
+- Creates session → updates Redux → redirects to History
 
-- CORS enabled  
-- No API key  
-- High uptime  
-- Public GET endpoints  
+### History:
+- FlatList + TrainingCard
+- Loads from backend on first mount
+- Reacts to Redux updates
 
-JSONPlaceholder fits all required assignment criteria:
-
-| Requirement | JSONPlaceholder Match |
-|------------|-----------------------|
-| Public REST API | ✔️ |
-| Supports GET | ✔️ |
-| Returns lists | ✔️ |
-| Usable for FlatList | ✔️ |
-| Allows details screen navigation | ✔️ `/posts/:id` |
-| Works on Web + iOS + Android | ✔️ |
-| No CORS issues | ✔️ |
-
-To adapt the data to our basketball theme, we **map post titles into training names**, and we **generate random accuracy values** for demonstration.  
-This approach shows understanding of API integration while keeping the demo consistent with SmartShooter’s subject area.
+### Training Details:
+- Edit session
+- Delete session
+- Notes, title, accuracy, date
 
 ---
 
-# 🧭 Navigation Architecture (from Cross Assignment 4)
-
-The app uses **Expo Router** (Stack + Tabs).
+## ▶️ How to Run the Backend
 
 ```
-app/
-  _layout.tsx                # Root Stack
-  (tabs)/_layout.tsx         # Bottom Tabs
-  (tabs)/history.tsx         # Displays API data
-  (tabs)/index.tsx
-  (tabs)/new-training.tsx
-  (tabs)/stats.tsx
-  (tabs)/profile.tsx
-  session/[id].tsx           # Details screen (receives params)
+cd backend
+npm install
+npm run dev
 ```
 
-Tabs remain consistent with your Figma design.
-
----
-
-# 🧱 Components Used
-
-Reusable components:
+Backend runs at:
 
 ```
-app/components/
-  PrimaryButton.tsx
-  StepperInput.tsx
-  TrainingCard.tsx
-  StatsCard.tsx
-  ProgressBar.tsx
-  ProfileHeader.tsx
-```
-
-Centralized styling:
-
-```
-app/constants/
-  colors.ts
-  spacing.ts
-  radius.ts
-  shadows.ts
+http://localhost:4000
 ```
 
 ---
 
-# 🖼 Screenshots (Add Your Final Ones)
-
-### History Screen – API Data Loaded  
-<img src="assets/screenshots/history.jpg" width="280" />
-
-### Navigation Demo Video  
-Stored in:
+## ▶️ How to Run the Frontend (Expo)
 
 ```
-assets/videos/navigation.mp4
-```
-
----
-
-# ▶️ Running the App
-
-```bash
 npm install
 npx expo start
 ```
 
-Use:
+Run on:
 
-- **w** → Web
-- **i** → iOS simulator (macOS only)
-- **a** → Android emulator
-- **QR code** → Expo Go on your phone
+- **Web** (press `w`)
+- **Android emulator** (press `a`)
+- **iOS simulator** (press `i`, macOS only)
+- **Expo Go on phone**
+
+If using a phone: set backend URL in `api.ts` to your local IP.
 
 ---
 
-# 📂 Project Structure
+## 📂 Project Structure (Updated)
 
 ```
 smartshooter-rn
  ├─ app
  │   ├─ api/api.ts
  │   ├─ (tabs)/
- │   ├─ session/[id].tsx
+ │   │   ├─ index.tsx
+ │   │   ├─ new-training.tsx
+ │   │   ├─ history.tsx
+ │   │   ├─ stats.tsx
+ │   │   └─ profile.tsx
+ │   ├─ training/[id].tsx
  │   ├─ components/
- │   ├─ constants/
- │   └─ hooks/
- ├─ assets/
- │   ├─ images/
- │   ├─ screenshots/
- │   └─ videos/navigation.mp4
+ │   ├─ constants/colors.ts
+ │   └─ store/
+ │       ├─ trainingSessionsSlice.ts
+ │       └─ store.ts
+ ├─ backend/
+ │   ├─ server.js
+ │   └─ package.json
  ├─ README.md
  └─ package.json
 ```
 
 ---
 
-# 📬 Submission Checklist (Cross Assignment 5)
+## ✔️ Submission Checklist
 
-| Requirement | Status |
-|------------|--------|
-| Public API selected | ✔️ JSONPlaceholder |
-| Fetch integrated | ✔️ |
-| State management (useState) | ✔️ |
-| List rendering via FlatList | ✔️ |
-| Navigation to details | ✔️ |
-| Error & loading states | ✔️ |
-| API logic in separate file | ✔️ `api/api.ts` |
-| Screenshots/video added to README | ✔️ |
-| Clean modular code | ✔️ |
-| Repo uploaded to GitHub | ✔️ |
-| Ready for ZIP archive | ✔️ |
-
-Everything is now in place.
+- Context API implemented  
+- Redux with CRUD  
+- Custom backend API added  
+- FlatList rendering  
+- Error & loading states  
+- Navigation integrated  
+- Dark theme fully supported  
+- README with run instructions  
 
 ---
 
-# 👤 Author  
+## 👤 Author
+
 Roman Mazuryk – SmartShooter RN  
 Neoversity – React Native Module  
 2025
