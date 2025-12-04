@@ -1,177 +1,198 @@
-# SmartShooter RN – Cross Assignment 6 (Context API + Redux + Custom API)
+# SmartShooter RN – Cross Assignment 6–7 (Context API, Redux, Custom API, Animations & Performance)
 
-SmartShooter RN is a React Native (Expo + TypeScript) application that helps players track their basketball shooting performance.
+SmartShooter RN is a React Native (Expo + TypeScript) application for tracking basketball shooting performance.
 
-This repository now includes the implementation for:
+This repository includes implementations for:
 
-- **Cross Assignment 4** – Navigation (Expo Router)
-- **Cross Assignment 5** – Basic API integration & list rendering
-- **Cross Assignment 6** – **Context API (theme)** + **Redux** + **custom backend API with full CRUD**
-
----
-
-## 🎯 What Was Implemented in Cross Assignment 6
-
-### 1. Context API – Light / Dark Theme
-
-The app uses a custom **ThemeContext** to manage light/dark theme:
-
-- `ThemeProvider` wraps the entire app.
-- Screens consume `useTheme()` to adjust colors:
-  - Background: `background` / `darkBackground`
-  - Text: `textPrimary/textSecondary` vs `darkTextPrimary/darkTextSecondary`
-  - Cards: `surface/border` vs `darkSurface/darkBorder`
-- Implemented on:
-  - `Home` (`app/(tabs)/index.tsx`)
-  - `New Training` (`app/(tabs)/new-training.tsx`)
-  - `History` (`app/(tabs)/history.tsx`)
-  - `Training Details` (`app/training/[id].tsx`)
-
-Dark theme readability has been improved using dedicated dark color tokens in `colors.ts`.
+- **Cross Assignment 6** – Context API (theme), Redux state management, custom backend API with full CRUD  
+- **Cross Assignment 7** – Layout animations, render optimizations, dependency cleanup, bundle analysis  
 
 ---
 
-## 2. Redux – Global State for Training Sessions
+## 🎨 1. Theme Switching – Context API
 
-Redux Toolkit is used for managing global state:
+Implemented global theme management using a custom `ThemeContext`.
 
-- Slice: `trainingSessionsSlice.ts`
-- Reducers:
-  - `setSessions` – initialize list from backend
-  - `addSession` – add new session
-  - `updateSession` – edit session
-  - `deleteSession` – remove session
-
-Redux is consumed on New Training, History, and Training Details screens.
+Features:
+- Light/Dark theme support
+- Dynamic colors for text, backgrounds, cards
+- Applied across: Home, New Training, History, Training Details
 
 ---
 
-## 3. Custom Backend API (Express)
+## 🗃️ 2. Redux – Global Training Session Management
 
-Backend folder: `backend/`
+Redux Toolkit slice: `trainingSessionsSlice.ts`
+
+Supports:
+- `setSessions` – initialize from backend  
+- `addSession` – create new session  
+- `updateSession` – edit session  
+- `deleteSession` – remove session  
+
+Connected screens: New Training, History, Session Details.
+
+---
+
+## 🔧 3. Custom Backend API (Node/Express)
 
 Endpoints:
 
-- `GET /sessions`
-- `POST /sessions`
-- `PUT /sessions/:id`
-- `DELETE /sessions/:id`
+```
+GET    /sessions
+POST   /sessions
+PUT    /sessions/:id
+DELETE /sessions/:id
+```
 
-This API replaces the earlier JSONPlaceholder test API.
+Frontend API wrapper: `app/api/api.ts`.
 
 ---
 
-## 4. Frontend API Layer
+## 📱 4. UI Highlights
 
-`app/api/api.ts` encapsulates backend calls:
+### New Training Screen
+- Training types: Catch & Shoot, Spot Shooting, Half Court Sprints, Off the Dribble  
+- Stepper + manual input  
+- Live accuracy calculation  
+- Persist session → Redux → Redirect to History  
+
+### History Screen
+- FlatList with memoized TrainingCard  
+- Loads from backend once  
+- Stable navigation  
+
+### Training Details
+- Delete / Edit session  
+- Notes, accuracy, last session date  
+
+---
+
+# 🎬 Cross Assignment 7 – Animations & Performance
+
+## 7.1 Layout Animation (New Training Dropdown)
+
+A smooth dropdown animation implemented with:
 
 ```ts
-fetchSessions();
-createSession();
-updateSessionApi();
-deleteSessionApi();
+LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 ```
 
-Used throughout the app for CRUD operations.
+Triggered when selecting a training type.
 
 ---
 
-## 5. UI / UX Flow
+## 7.2 Render Optimization
 
-### New Training:
-- Training types: *Catch & Shoot, Spot Shooting, Half Court Sprints, Off the Dribble*
-- Stepper inputs + manual editing
-- Automatic accuracy calculation
-- Creates session → updates Redux → redirects to History
+Component optimized: **TrainingCard**
 
-### History:
-- FlatList + TrainingCard
-- Loads from backend on first mount
-- Reacts to Redux updates
+Applied:
+- `React.memo` to prevent unnecessary re-renders  
+- `useCallback` for stable functions in props  
+- `useMemo` for accuracy calculation  
 
-### Training Details:
-- Edit session
-- Delete session
-- Notes, title, accuracy, date
+Verification:
+- Before optimization: multiple “Render card:” logs on every UI interaction  
+- After optimization: **exactly one render per card per mount**
 
 ---
 
-## ▶️ How to Run the Backend
+## 7.3 Dependency Cleanup – dayjs instead of heavy libraries
+
+- No `moment` or `lodash` included  
+- For dates, project uses lightweight **dayjs** (~2 KB gzipped)
+
+Example:
+
+```ts
+import dayjs from 'dayjs';
+dayjs(item.lastSessionDate).format('DD.MM.YYYY');
+```
+
+---
+
+## 7.4 Bundle Size Analysis
+
+Due to Metro sourcemap structure, `source-map-explorer` throws:
 
 ```
+generated column Infinity
+```
+
+Instead, bundle size was measured using:
+
+```
+expo export -p web
+ls -lh dist/_expo/static/js/web/entry-*.js
+```
+
+**Final bundle size:** approx. **1.1 MB**  
+(Without heavy libraries like moment/lodash)
+
+Screenshot included in submission ZIP.
+
+---
+
+# ▶️ How to Run
+
+## Backend
+```bash
 cd backend
 npm install
 npm run dev
 ```
-
-Backend runs at:
-
-```
-http://localhost:4000
-```
+Runs on: `http://localhost:4000`
 
 ---
 
-## ▶️ How to Run the Frontend (Expo)
-
-```
+## Frontend (Expo)
+```bash
 npm install
 npx expo start
 ```
 
-Run on:
-
-- **Web** (press `w`)
-- **Android emulator** (press `a`)
-- **iOS simulator** (press `i`, macOS only)
-- **Expo Go on phone**
-
-If using a phone: set backend URL in `api.ts` to your local IP.
+Supports:
+- `w` – Web  
+- `a` – Android  
+- `i` – iOS (macOS only)  
+- Expo Go mobile app  
 
 ---
 
-## 📂 Project Structure (Updated)
+## 📁 Folder Structure
 
 ```
 smartshooter-rn
- ├─ app
- │   ├─ api/api.ts
+ ├─ app/
+ │   ├─ api/
  │   ├─ (tabs)/
- │   │   ├─ index.tsx
- │   │   ├─ new-training.tsx
- │   │   ├─ history.tsx
- │   │   ├─ stats.tsx
- │   │   └─ profile.tsx
- │   ├─ training/[id].tsx
+ │   ├─ training/
  │   ├─ components/
- │   ├─ constants/colors.ts
  │   └─ store/
- │       ├─ trainingSessionsSlice.ts
- │       └─ store.ts
  ├─ backend/
- │   ├─ server.js
- │   └─ package.json
- ├─ README.md
- └─ package.json
+ ├─ dist/
+ ├─ assets/
+ └─ README.md
 ```
 
 ---
 
-## ✔️ Submission Checklist
+# ✔️ Submission Checklist (Cross Assignment 7)
 
-- Context API implemented  
-- Redux with CRUD  
-- Custom backend API added  
-- FlatList rendering  
-- Error & loading states  
-- Navigation integrated  
-- Dark theme fully supported  
-- README with run instructions  
+- [x] LayoutAnimation added  
+- [x] React.memo + useCallback + useMemo applied  
+- [x] TrainingCard optimized  
+- [x] dayjs used instead of heavy libraries  
+- [x] Bundle size measured  
+- [x] README updated  
+- [x] ZIP archive prepared with:
+  - animation screenshots  
+  - render logs  
+  - bundle size screenshot  
+  - updated code  
 
 ---
 
-## 👤 Author
-
+# ✨ Author  
 Roman Mazuryk – SmartShooter RN  
-Neoversity – React Native Module  
-2025
+Neoversity – React Native Module, 2025

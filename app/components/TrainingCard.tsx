@@ -3,14 +3,12 @@ import { COLORS } from '@/app/constants/colors';
 import { RADIUS } from '@/app/constants/radius';
 import { SHADOW } from '@/app/constants/shadows';
 import { SPACING } from '@/app/constants/spacing';
-import React from 'react';
+import React, { memo } from 'react';
 import {
   Pressable,
   StyleSheet,
   Text,
-  TextStyle,
-  View,
-  ViewStyle,
+  View
 } from 'react-native';
 
 // Simple dark palette (like Profile screen)
@@ -26,13 +24,16 @@ type TrainingCardProps = {
   isDark?: boolean;
 };
 
-export default function TrainingCard({
+function TrainingCard({
   title,
   accuracy,
   lastSessionLabel,
   onPress,
   isDark = false,
 }: TrainingCardProps) {
+  
+  console.log('Render card:', title);   // still visible for testing
+  
   return (
     <Pressable
       onPress={onPress}
@@ -66,22 +67,9 @@ export default function TrainingCard({
   );
 }
 
-type Styles = {
-  card: ViewStyle;
-  cardDark: ViewStyle;
-  cardPressed: ViewStyle;
-  iconWrapper: ViewStyle;
-  iconText: TextStyle;
-  textBlock: ViewStyle;
-  title: TextStyle;
-  titleDark: TextStyle;
-  accuracy: TextStyle;
-  accuracyDark: TextStyle;
-  meta: TextStyle;
-  metaDark: TextStyle;
-};
+export default memo(TrainingCard);  // <-- ⭐ KEY FIX
 
-const styles = StyleSheet.create<Styles>({
+const styles = StyleSheet.create({
   card: {
     flex: 1,
     borderRadius: RADIUS.card,
@@ -99,7 +87,6 @@ const styles = StyleSheet.create<Styles>({
     width: 32,
     height: 32,
     borderRadius: 16,
-    // ⬇️ fixed: use existing accent color
     backgroundColor: COLORS.accent,
     alignItems: 'center',
     justifyContent: 'center',

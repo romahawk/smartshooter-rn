@@ -3,10 +3,13 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   Alert,
+  LayoutAnimation,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  UIManager,
   View,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
@@ -19,6 +22,14 @@ import { useTheme } from '@/app/context/ThemeContext';
 
 import { createSession } from '@/app/api/api';
 import { addSession } from '@/app/store/trainingSessionsSlice';
+
+// Увімкнення LayoutAnimation для Android
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 const TRAINING_TYPES = [
   'Catch & Shoot',
@@ -34,7 +45,6 @@ export default function NewTrainingScreen() {
 
   const [trainingType, setTrainingType] = useState<string>('Catch & Shoot');
   const [pickerOpen, setPickerOpen] = useState<boolean>(false);
-
   const [attempts, setAttempts] = useState<number>(100);
   const [madeShots, setMadeShots] = useState<number>(73);
 
@@ -58,7 +68,13 @@ export default function NewTrainingScreen() {
   const accuracy =
     attempts === 0 ? 0 : Math.round((madeShots / attempts) * 100);
 
+  const togglePicker = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setPickerOpen(prev => !prev);
+  };
+
   const handleSelectType = (type: string) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setTrainingType(type);
     setPickerOpen(false);
   };
@@ -75,10 +91,8 @@ export default function NewTrainingScreen() {
     try {
       const acc =
         attempts === 0 ? 0 : Math.round((madeShots / attempts) * 100);
-
       const today = new Date().toISOString().split('T')[0];
 
-      // 1) створюємо сесію на backendʼі
       const created = await createSession({
         title: trainingType,
         accuracy: acc,
@@ -86,10 +100,7 @@ export default function NewTrainingScreen() {
         notes: `${trainingType}: ${madeShots}/${attempts} made shots (${acc}%)`,
       });
 
-      // 2) синхронізуємо Redux-стан
       dispatch(addSession(created));
-
-      // 3) переходимо до History
       router.push('/history');
     } catch (error) {
       console.error('Failed to save session', error);
@@ -108,7 +119,7 @@ export default function NewTrainingScreen() {
     >
       <Text style={[styles.title, titleColor]}>New Training</Text>
 
-      {/* Training type */}
+      {/* Training type with animated dropdown */}
       <View style={[styles.card, inputCardStyle]}>
         <Text style={[styles.label, labelColor]}>Training type</Text>
 
@@ -119,7 +130,7 @@ export default function NewTrainingScreen() {
               borderColor: isDark ? COLORS.darkBorder : COLORS.border,
             },
           ]}
-          onPress={() => setPickerOpen((prev) => !prev)}
+          onPress={togglePicker}
         >
           <Text style={[styles.fakeSelectText, titleColor]}>
             {trainingType}
@@ -255,6 +266,7 @@ const styles = StyleSheet.create({
   },
   dropdownItemText: {
     fontSize: 14,
+    color: COLORS.textPrimary,
   },
   dropdownItemTextActive: {
     fontWeight: '700',

@@ -1,6 +1,7 @@
 // app/(tabs)/history.tsx
+import dayjs from 'dayjs';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -47,9 +48,9 @@ export default function HistoryScreen() {
           dispatch(setSessions(data));
         }
       } catch (err) {
-        console.error(err);
+        console.error('Failed to load sessions', err);
         if (isMounted) {
-          setError('Failed to load sessions from API');
+          setError('Failed to load sessions. Please try again.');
         }
       } finally {
         if (isMounted) {
@@ -58,7 +59,7 @@ export default function HistoryScreen() {
       }
     }
 
-    // ВАЖЛИВО: фетчимо тільки якщо ще немає сесій
+    // фетчимо тільки коли в сторі ще немає сесій
     if (sessions.length === 0) {
       load();
     }
@@ -68,22 +69,30 @@ export default function HistoryScreen() {
     };
   }, [dispatch, sessions.length]);
 
-  const renderItem = ({ item }: { item: ApiSession }) => (
-    <View style={styles.cardWrapper}>
-      <TrainingCard
-        title={item.title}
-        accuracy={item.accuracy}
-        lastSessionLabel={item.lastSessionDate}
-        isDark={isDark}
-        onPress={() =>
-          router.push({
-            pathname: '/training/[id]',
-            params: { id: String(item.id) },
-          })
-        }
-      />
-    </View>
+  const renderItem = useCallback(
+  ({ item }: { item: ApiSession }) => {
+    const formattedDate = dayjs(item.lastSessionDate).format('DD.MM.YYYY');
+
+    return (
+      <View style={styles.cardWrapper}>
+        <TrainingCard
+          title={item.title}
+          accuracy={item.accuracy}
+          lastSessionLabel={formattedDate}
+          isDark={isDark}
+          onPress={() =>
+            router.push({
+              pathname: '/training/[id]',
+              params: { id: String(item.id) },
+            })
+          }
+        />
+      </View>
+    );
+  },
+  [isDark, router]
   );
+
 
   if (loading && sessions.length === 0) {
     return (
